@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:signature/signature.dart';
+import 'package:hand_signature/signature.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/report_problem_dialog.dart';
+import '../../widgets/signature_pad.dart';
 
 /// Cierre de la OT (`completeWorkOrder`): estado final de cada equipo,
 /// nombre de quien recibe y firma manuscrita (PNG -> R2).
@@ -21,13 +22,11 @@ class CloseWorkOrderScreen extends ConsumerStatefulWidget {
 
 class _CloseWorkOrderScreenState extends ConsumerState<CloseWorkOrderScreen> {
   final _name = TextEditingController();
-  final _signature = SignatureController(
-    penStrokeWidth: 3,
-    penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
-  );
+  final HandSignatureControl _signature = createSignatureControl();
   final Map<String, ElevatorFinalStatus> _statuses = {};
   bool _sending = false;
+  // Mientras se firma, la lista no se desplaza (ver SignaturePad).
+  bool _signing = false;
 
   @override
   void initState() {
@@ -54,7 +53,7 @@ class _CloseWorkOrderScreenState extends ConsumerState<CloseWorkOrderScreen> {
 
   Future<void> _submit() async {
     setState(() => _sending = true);
-    final png = await _signature.toPngBytes();
+    final png = await exportSignaturePng(_signature);
     if (!mounted) return;
     setState(() => _sending = false);
     if (png == null) return;
@@ -75,9 +74,12 @@ class _CloseWorkOrderScreenState extends ConsumerState<CloseWorkOrderScreen> {
       appBar: AppBar(title: const Text('Cerrar orden')),
       body: asyncView(value, (o) {
         final valid = _name.text.trim().isNotEmpty &&
-            _signature.isNotEmpty &&
+            _signature.isFilled &&
             o.elevators.every((e) => _statuses.containsKey(e.id));
-        return ListView(padding: listPadding(context), children: [
+        return ListView(
+            padding: listPadding(context),
+            physics: _signing ? const NeverScrollableScrollPhysics() : null,
+            children: [
           const SectionLabel('Estado final de cada equipo'),
           const SizedBox(height: 4),
           for (final e in o.elevators)
@@ -129,7 +131,12 @@ class _CloseWorkOrderScreenState extends ConsumerState<CloseWorkOrderScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
-            child: Signature(controller: _signature, height: 200, backgroundColor: Colors.white),
+            child: SignaturePad(
+              control: _signature,
+              onActiveChanged: (active) {
+                if (_signing != active) setState(() => _signing = active);
+              },
+            ),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(

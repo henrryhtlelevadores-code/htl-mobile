@@ -20,12 +20,12 @@ dependencies:
   record: ^7.1.1
   just_audio: ^0.10.6
   geolocator: ^14.1.1
-  signature: ^6.4.0
   uuid: ^4.5.1
   intl: ^0.20.2
   connectivity_plus: ^7.3.1
   permission_handler: ^13.0.2
   url_launcher: ^6.3.3
+  hand_signature: 3.1.0
 
 dev_dependencies:
   flutter_test:
