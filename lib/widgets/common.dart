@@ -109,29 +109,18 @@ class ServiceTypeChip extends StatelessWidget {
   }
 }
 
-/// Cuadro azul "HTL" del encabezado del portal.
-class HtlMark extends StatelessWidget {
-  const HtlMark({super.key, this.size = 32});
-  final double size;
+/// Logo pequeño de Fortex para el encabezado, en el color del tema.
+class FortexMark extends StatelessWidget {
+  const FortexMark({super.key, this.width = 58});
+  final double width;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(size / 4),
-        ),
-        child: Text(
-          'HTL',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: size * 0.31,
-            letterSpacing: 0.2,
-          ),
-        ),
+  Widget build(BuildContext context) => Image.asset(
+        Theme.of(context).brightness == Brightness.dark
+            ? 'assets/images/fortex-blanco.png'
+            : 'assets/images/fortex-azul.png',
+        width: width,
+        semanticLabel: 'Fortex Business Solutions',
       );
 }
 

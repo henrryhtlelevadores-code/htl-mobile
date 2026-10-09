@@ -46,8 +46,8 @@ class _WorkOrdersScreenState extends ConsumerState<WorkOrdersScreen> {
       appBar: AppBar(
         titleSpacing: 16,
         title: Row(children: [
-          const HtlMark(),
-          const SizedBox(width: 10),
+          const FortexMark(),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Técnico de Campo', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
@@ -172,8 +172,6 @@ class _WorkOrdersScreenState extends ConsumerState<WorkOrdersScreen> {
               SectionLabel('Completadas · ${done.length}'),
               for (final o in done) _WorkOrderCard(o),
             ],
-            const SizedBox(height: 28),
-            const FortexCredit(logoWidth: 72),
           ]),
         ),
       ],
