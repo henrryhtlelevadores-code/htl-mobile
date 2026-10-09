@@ -55,6 +55,9 @@ abstract class TechnicianRepository {
   /// POST /elevators/:id/audios (multipart). Devuelve el audio local.
   Future<ElevatorAudio> addAudio(String workOrderId, String elevatorId, File file, int durationMs);
 
+  /// DELETE /audios/:id (o lo saca de la cola si no se subió).
+  Future<void> removeAudio(String workOrderId, ElevatorAudio audio);
+
   /// POST /elevators/:id/complete
   Future<void> completeElevator(String workOrderId, Elevator e, {required bool allCompleted});
 

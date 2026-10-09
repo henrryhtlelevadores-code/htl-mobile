@@ -59,10 +59,33 @@ class _FindingsScreenState extends ConsumerState<FindingsScreen> {
     _save();
   }
 
+  Future<void> _deleteAudio(Elevator e, ElevatorAudio a) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Eliminar nota de voz'),
+        content: const Text('Se borrará la grabación. No se puede deshacer.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(c).colorScheme.error),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    _ctrl.removeAudio(e, a);
+    showResult(context, const ActionResult(true, 'Nota de voz eliminada'));
+  }
+
   Future<void> _addPhoto() async {
     final shot = await capturePhoto(context, initialTag: PhotoTag.point, askTag: false);
     if (shot == null) return;
     await _ctrl.addPhoto(_e, shot.file, PhotoTag.point, description: shot.description);
+    final audio = shot.audio;
+    if (audio != null) await _ctrl.addAudio(_e, audio.file, audio.durationMs);
   }
 
   @override
@@ -116,7 +139,12 @@ class _FindingsScreenState extends ConsumerState<FindingsScreen> {
             const SizedBox(height: 16),
             Text('Notas de voz', style: Theme.of(context).textTheme.titleSmall),
             for (final a in e.audios)
-              AudioTile(a, onUseTranscript: readOnly ? null : _appendTranscript),
+              AudioTile(
+                a,
+                key: ValueKey(a.id),
+                onUseTranscript: readOnly ? null : _appendTranscript,
+                onDelete: readOnly ? null : () => _deleteAudio(e, a),
+              ),
           ],
           if (points.isNotEmpty) ...[
             const SizedBox(height: 16),

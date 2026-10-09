@@ -263,6 +263,13 @@ class ApiTechnicianRepository implements TechnicianRepository {
   }
 
   @override
+  Future<void> removeAudio(String workOrderId, ElevatorAudio audio) async {
+    // Si aún no se subió, basta con sacarlo de la cola (borra la copia local).
+    if (await queue.cancel(audio.id)) return;
+    await _send(workOrderId, '/audios/${audio.id}', {}, method: 'DELETE');
+  }
+
+  @override
   Future<void> completeElevator(String workOrderId, Elevator e, {required bool allCompleted}) =>
       _send(workOrderId, '/elevators/${e.id}/complete', {
         'mode': allCompleted ? 'all_completed' : 'partial',

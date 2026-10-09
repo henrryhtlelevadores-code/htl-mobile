@@ -186,6 +186,9 @@ class MockTechnicianRepository implements TechnicianRepository {
       ElevatorAudio(id: _uuid.v4(), localPath: file.path, durationMs: durationMs);
 
   @override
+  Future<void> removeAudio(String workOrderId, ElevatorAudio audio) async {}
+
+  @override
   Future<void> completeElevator(String workOrderId, Elevator e, {required bool allCompleted}) async {}
 
   @override

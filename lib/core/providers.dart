@@ -266,6 +266,11 @@ class WorkOrderController extends AsyncNotifier<WorkOrderDetail> {
     _commit();
   }
 
+  void removeAudio(Elevator e, ElevatorAudio a) {
+    e.audios.removeWhere((x) => x.id == a.id);
+    _commit((r, o) => r.removeAudio(o.id, a));
+  }
+
   // --- Cierre ----------------------------------------------------------
 
   String? completeElevator(Elevator e, {required bool allCompleted}) {

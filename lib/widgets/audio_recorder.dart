@@ -129,11 +129,13 @@ class _AudioRecorderButtonState extends State<AudioRecorderButton> {
   }
 }
 
-/// Fila de un audio: reproducir y ver el estado de la transcripción.
+/// Fila de un audio: reproducir, ver el estado de la transcripción y, si se
+/// permite, eliminarlo.
 class AudioTile extends StatefulWidget {
-  const AudioTile(this.audio, {super.key, this.onUseTranscript});
+  const AudioTile(this.audio, {super.key, this.onUseTranscript, this.onDelete});
   final ElevatorAudio audio;
   final void Function(String text)? onUseTranscript;
+  final VoidCallback? onDelete;
 
   @override
   State<AudioTile> createState() => _AudioTileState();
@@ -174,7 +176,7 @@ class _AudioTileState extends State<AudioTile> {
     final a = widget.audio;
     final secs = (a.durationMs / 1000).round();
     final status = a.isPendingUpload
-        ? 'Guardado en el teléfono. Se subirá y transcribirá cuando haya señal.'
+        ? 'Guardado en el teléfono. Se subirá cuando haya señal.'
         : switch (a.transcriptStatus) {
             // NONE: el servidor guardó el audio pero no lo transcribe.
             'DONE' || 'NONE' => null,
@@ -197,6 +199,15 @@ class _AudioTileState extends State<AudioTile> {
             Text('Nota de voz · ${secs ~/ 60}:${(secs % 60).toString().padLeft(2, '0')}'),
             const Spacer(),
             if (a.isPendingUpload) const Icon(Icons.cloud_upload_outlined, size: 18),
+            if (widget.onDelete != null)
+              IconButton(
+                tooltip: 'Eliminar nota de voz',
+                icon: const Icon(Icons.delete_outline, color: AppColors.redText),
+                onPressed: () async {
+                  await _player.stop();
+                  widget.onDelete!();
+                },
+              ),
           ]),
           if (status != null)
             Padding(
