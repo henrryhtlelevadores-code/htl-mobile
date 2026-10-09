@@ -16,20 +16,28 @@ class ElevatorScreen extends ConsumerWidget {
   final String elevatorId;
 
   Future<void> _finish(BuildContext context, WidgetRef ref, Elevator e) async {
-    // Hallazgos es opcional, pero al finalizar el equipo queda bloqueado:
-    // si está vacío se avisa antes, con la opción de ir a llenarlo.
-    final noFindings = (e.finding?.trim().isEmpty ?? true) &&
-        e.audios.isEmpty &&
-        !e.photos.any((p) => p.tag == PhotoTag.point && p.taskId == null);
-    if (noFindings) {
+    // Hallazgos (el texto `finding` del equipo) es opcional, pero al
+    // finalizar queda bloqueado: si está vacío se avisa antes. Los
+    // comentarios de las fotos y las notas de voz no lo reemplazan; si los
+    // hay, se menciona para que el técnico decida si está conforme.
+    if (e.finding?.trim().isEmpty ?? true) {
+      final photoNotes = e.photos.where((p) => p.description?.trim().isNotEmpty ?? false).length;
+      final audios = e.audios.length;
+      final extras = [
+        if (photoNotes > 0) photoNotes == 1 ? 'un comentario en una foto' : 'comentarios en $photoNotes fotos',
+        if (audios > 0) audios == 1 ? 'una nota de voz' : '$audios notas de voz',
+      ];
       final choice = await showChoiceDialog<String>(
         context,
         title: 'Hallazgos está vacío',
-        message: 'No registraste ninguna observación, foto ni nota de voz para '
-            '${e.displayName}. Después de finalizar ya no podrás agregarlas.',
+        message: extras.isEmpty
+            ? 'No escribiste hallazgos para ${e.displayName}. Después de finalizar ya no podrás '
+                'agregarlos. ¿Deseas finalizar así?'
+            : 'Dejaste ${extras.join(' y ')}, pero el texto de Hallazgos de ${e.displayName} está '
+                'vacío. Si estás conforme, continúa; si no, escríbelo antes de finalizar.',
         actions: const [
-          DialogAction('Agregar hallazgo', 'add', icon: Icons.sticky_note_2_outlined),
-          DialogAction('Finalizar sin hallazgos', 'continue'),
+          DialogAction('Escribir hallazgos', 'add', icon: Icons.edit_note),
+          DialogAction('Estoy conforme, continuar', 'continue'),
         ],
       );
       if (!context.mounted || choice == null) return;
