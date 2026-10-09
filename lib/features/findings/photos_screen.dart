@@ -68,7 +68,7 @@ class PhotosScreen extends ConsumerWidget {
             child: e.photos.isEmpty
                 ? const Center(child: Text('Aún no hay fotos.'))
                 : GridView.count(
-                    padding: const EdgeInsets.all(12),
+                    padding: listPadding(context, horizontal: 12, top: 12),
                     crossAxisCount: 3,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,

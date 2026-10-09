@@ -109,7 +109,7 @@ class _FindingsScreenState extends ConsumerState<FindingsScreen> {
         final e = o.elevators.firstWhere((x) => x.id == widget.elevatorId);
         final readOnly = e.isCompleted;
         final points = e.photos.where((p) => p.tag == PhotoTag.point && p.taskId == null);
-        return ListView(padding: const EdgeInsets.all(16), children: [
+        return ListView(padding: listPadding(context), children: [
           TextField(
             controller: _text,
             enabled: !readOnly,

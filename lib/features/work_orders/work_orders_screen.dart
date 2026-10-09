@@ -131,7 +131,7 @@ class _WorkOrdersScreenState extends ConsumerState<WorkOrdersScreen> {
 
     final colors = AppColors.of(context);
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: listPadding(context, horizontal: 0, top: 0),
       children: [
         const SizedBox(height: 12),
         _DayStrip(

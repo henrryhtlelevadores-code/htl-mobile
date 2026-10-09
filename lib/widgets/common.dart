@@ -6,18 +6,119 @@ import '../core/theme.dart';
 import '../core/theme_mode.dart';
 import '../data/models.dart';
 
+OverlayEntry? _currentToast;
+
+/// Aviso breve en la parte SUPERIOR, bajo la barra de la pantalla. Abajo
+/// tapaba el último elemento de las listas y los botones del pie (p. ej.
+/// "Aprobar seguridad"). Entra deslizándose, se va solo y se cierra al tocarlo.
 void showResult(BuildContext context, ActionResult r, {String? fallback}) {
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(SnackBar(
-    content: Text(r.message ?? fallback ?? (r.success ? 'Listo' : 'Error')),
-    backgroundColor: r.success ? null : Theme.of(context).colorScheme.error,
-  ));
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  if (overlay == null) return;
+  final message = r.message ?? fallback ?? (r.success ? 'Listo' : 'Error');
+
+  final previous = _currentToast;
+  if (previous != null && previous.mounted) previous.remove();
+
+  late final OverlayEntry entry;
+  entry = OverlayEntry(
+    builder: (_) => _TopToast(
+      message: message,
+      success: r.success,
+      onDone: () {
+        if (entry.mounted) entry.remove();
+        if (_currentToast == entry) _currentToast = null;
+      },
+    ),
+  );
+  _currentToast = entry;
+  overlay.insert(entry);
+}
+
+class _TopToast extends StatefulWidget {
+  const _TopToast({required this.message, required this.success, required this.onDone});
+  final String message;
+  final bool success;
+  final VoidCallback onDone;
+
+  @override
+  State<_TopToast> createState() => _TopToastState();
+}
+
+class _TopToastState extends State<_TopToast> with SingleTickerProviderStateMixin {
+  late final _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+  bool _closing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _anim.forward();
+    Future.delayed(const Duration(milliseconds: 2600), _close);
+  }
+
+  Future<void> _close() async {
+    if (_closing || !mounted) return;
+    _closing = true;
+    await _anim.reverse();
+    widget.onDone();
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.viewPaddingOf(context).top + kToolbarHeight + 8;
+    final bg = widget.success ? const Color(0xFF0F172A) : Theme.of(context).colorScheme.error;
+    final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOutCubic);
+    return Positioned(
+      top: top,
+      left: 16,
+      right: 16,
+      child: FadeTransition(
+        opacity: curve,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(0, -0.4), end: Offset.zero).animate(curve),
+          child: Material(
+            color: bg,
+            elevation: 2,
+            shadowColor: Colors.black12,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _close,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(children: [
+                  Icon(widget.success ? Icons.check_circle : Icons.error_outline,
+                      color: widget.success ? AppColors.emerald : Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(widget.message,
+                        style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 void showError(BuildContext context, Object e) {
   showResult(context, ActionResult(false, e.toString().replaceFirst('Exception: ', '')));
 }
+
+/// Relleno de las listas con scroll. Android dibuja la app detrás de la
+/// barra de navegación del sistema (pantalla completa), así que el fondo
+/// suma esa barra más un margen holgado: la última tarjeta siempre queda
+/// visible y se puede tocar.
+EdgeInsets listPadding(BuildContext context, {double horizontal = 16, double top = 16, double bottom = 80}) =>
+    EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom + MediaQuery.viewPaddingOf(context).bottom);
 
 /// Etiqueta redondeada como las del portal web: fondo suave, borde y texto
 /// en mayúsculas.

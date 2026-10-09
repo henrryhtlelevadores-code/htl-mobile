@@ -56,7 +56,7 @@ class ElevatorScreen extends ConsumerWidget {
         final base = '/ot/$workOrderId/eq/$elevatorId';
         final locked = e.isCompleted;
         final answered = e.safety?.items.where((i) => i.response != null).length ?? 0;
-        return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
+        return ListView(padding: listPadding(context), children: [
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

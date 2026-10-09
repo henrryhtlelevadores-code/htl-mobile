@@ -8,6 +8,7 @@ import 'package:record/record.dart';
 
 import '../core/theme.dart';
 import '../data/models.dart';
+import 'common.dart';
 
 /// Grabadora de notas de voz.
 ///
@@ -38,8 +39,8 @@ class _AudioRecorderButtonState extends State<AudioRecorderButton> {
   Future<void> _start() async {
     if (!await _recorder.hasPermission()) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Permite el acceso al micrófono en Ajustes para grabar audio.')));
+        showResult(context,
+            const ActionResult(false, 'Permite el acceso al micrófono en Ajustes para grabar audio.'));
       }
       return;
     }

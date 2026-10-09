@@ -43,7 +43,7 @@ class WorkOrderScreen extends ConsumerWidget {
       body: asyncView(value, (o) {
         final cc = o.costCenter;
         final kind = ServiceKind.of(o.serviceTypeCode);
-        return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
+        return ListView(padding: listPadding(context), children: [
           Card(
             clipBehavior: Clip.antiAlias,
             child: IntrinsicHeight(

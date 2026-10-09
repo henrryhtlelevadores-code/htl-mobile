@@ -64,7 +64,7 @@ class _CloseWorkOrderScreenState extends ConsumerState<CloseWorkOrderScreen> {
         final valid = _name.text.trim().isNotEmpty &&
             _signature.isNotEmpty &&
             o.elevators.every((e) => _statuses.containsKey(e.id));
-        return ListView(padding: const EdgeInsets.all(16), children: [
+        return ListView(padding: listPadding(context), children: [
           Text('Estado final de cada equipo', style: Theme.of(context).textTheme.titleMedium),
           for (final e in o.elevators)
             Card(

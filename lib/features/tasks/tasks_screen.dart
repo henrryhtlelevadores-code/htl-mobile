@@ -102,10 +102,13 @@ class TasksScreen extends ConsumerWidget {
         final readOnly = e.isCompleted;
         final modules = e.tasksByModule;
         if (modules.isEmpty) return const Center(child: Text('Este equipo no tiene tareas.'));
-        return ListView(padding: const EdgeInsets.all(12), children: [
+        return ListView(padding: listPadding(context, horizontal: 12, top: 12), children: [
           for (final entry in modules.entries)
             Card(
               child: ExpansionTile(
+                // Sin las líneas que ExpansionTile dibuja arriba y abajo.
+                shape: const Border(),
+                collapsedShape: const Border(),
                 initiallyExpanded: entry.value.any((t) => !t.isResolved),
                 title: Text(entry.value.first.moduleName ?? entry.key),
                 subtitle: Text(
