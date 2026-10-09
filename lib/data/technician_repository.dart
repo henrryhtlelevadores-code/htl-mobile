@@ -53,7 +53,9 @@ abstract class TechnicianRepository {
   Future<void> removePhoto(String workOrderId, ElevatorPhoto photo);
 
   /// POST /elevators/:id/audios (multipart). Devuelve el audio local.
-  Future<ElevatorAudio> addAudio(String workOrderId, String elevatorId, File file, int durationMs);
+  /// [photoId]: foto desde la que se grabó; null si es de Hallazgos.
+  Future<ElevatorAudio> addAudio(String workOrderId, String elevatorId, File file, int durationMs,
+      {String? photoId});
 
   /// DELETE /audios/:id (o lo saca de la cola si no se subió).
   Future<void> removeAudio(String workOrderId, ElevatorAudio audio);

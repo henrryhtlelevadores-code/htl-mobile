@@ -337,6 +337,13 @@ class ElevatorAudio {
   /// `PENDING` | `DONE` | `FAILED` (estado de la transcripción en servidor).
   final String transcriptStatus;
 
+  /// Foto desde la que se grabó la nota; null = grabada en Hallazgos.
+  final String? photoId;
+
+  /// Solo local: su transcripción ya se agregó al texto de Hallazgos, para
+  /// no repetirla cada vez que se recarga la orden.
+  final bool appliedToFinding;
+
   const ElevatorAudio({
     required this.id,
     this.url,
@@ -344,9 +351,14 @@ class ElevatorAudio {
     required this.durationMs,
     this.transcript,
     this.transcriptStatus = 'PENDING',
+    this.photoId,
+    this.appliedToFinding = false,
   });
 
   bool get isPendingUpload => url == null;
+
+  /// Nota grabada en Hallazgos (no desde una foto).
+  bool get isFindingNote => photoId == null;
 
   factory ElevatorAudio.fromJson(Map<String, dynamic> j) => ElevatorAudio(
         id: j['id'] as String,
@@ -355,6 +367,8 @@ class ElevatorAudio {
         durationMs: _int(j['durationMs']) ?? 0,
         transcript: j['transcript'] as String?,
         transcriptStatus: j['transcriptStatus'] as String? ?? 'PENDING',
+        photoId: j['photoId'] as String?,
+        appliedToFinding: j['appliedToFinding'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -364,6 +378,8 @@ class ElevatorAudio {
         'durationMs': durationMs,
         'transcript': transcript,
         'transcriptStatus': transcriptStatus,
+        'photoId': photoId,
+        'appliedToFinding': appliedToFinding,
       };
 }
 

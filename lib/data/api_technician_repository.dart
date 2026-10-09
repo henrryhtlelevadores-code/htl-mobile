@@ -140,6 +140,19 @@ class ApiTechnicianRepository implements TechnicianRepository {
           if (a.localPath != null) a.id: a.localPath!,
       },
     };
+    // Marca local: la transcripción ya se pasó al texto de Hallazgos.
+    final applied = <String>{
+      for (final e in local.elevators)
+        for (final a in e.audios)
+          if (a.appliedToFinding) a.id,
+    };
+    for (final e in fresh.elevators) {
+      for (var i = 0; i < e.audios.length; i++) {
+        if (applied.contains(e.audios[i].id)) {
+          e.audios[i] = ElevatorAudio.fromJson({...e.audios[i].toJson(), 'appliedToFinding': true});
+        }
+      }
+    }
     for (final e in fresh.elevators) {
       for (var i = 0; i < e.photos.length; i++) {
         final path = paths[e.photos[i].id];
@@ -248,18 +261,18 @@ class ApiTechnicianRepository implements TechnicianRepository {
   }
 
   @override
-  Future<ElevatorAudio> addAudio(
-      String workOrderId, String elevatorId, File file, int durationMs) async {
+  Future<ElevatorAudio> addAudio(String workOrderId, String elevatorId, File file, int durationMs,
+      {String? photoId}) async {
     final id = _uuid.v4();
     final local = await _persistFile(file, id, 'm4a');
     await _send(
       workOrderId,
       '/elevators/$elevatorId/audios',
-      {'id': id, 'durationMs': durationMs, 'createdAt': _now()},
+      {'id': id, 'durationMs': durationMs, 'createdAt': _now(), 'photoId': ?photoId},
       id: id,
       files: {'file': local},
     );
-    return ElevatorAudio(id: id, localPath: local, durationMs: durationMs);
+    return ElevatorAudio(id: id, localPath: local, durationMs: durationMs, photoId: photoId);
   }
 
   @override

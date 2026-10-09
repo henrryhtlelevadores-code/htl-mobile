@@ -181,9 +181,9 @@ class MockTechnicianRepository implements TechnicianRepository {
   Future<void> removePhoto(String workOrderId, ElevatorPhoto photo) async {}
 
   @override
-  Future<ElevatorAudio> addAudio(
-          String workOrderId, String elevatorId, File file, int durationMs) async =>
-      ElevatorAudio(id: _uuid.v4(), localPath: file.path, durationMs: durationMs);
+  Future<ElevatorAudio> addAudio(String workOrderId, String elevatorId, File file, int durationMs,
+          {String? photoId}) async =>
+      ElevatorAudio(id: _uuid.v4(), localPath: file.path, durationMs: durationMs, photoId: photoId);
 
   @override
   Future<void> removeAudio(String workOrderId, ElevatorAudio audio) async {}

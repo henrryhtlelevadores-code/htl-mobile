@@ -25,9 +25,9 @@ class PhotosScreen extends ConsumerWidget {
       final shot = await capturePhoto(context,
           initialTag: e.photos.isEmpty ? PhotoTag.before : PhotoTag.after);
       if (shot == null) return;
-      await ctrl.addPhoto(e, shot.file, shot.tag, description: shot.description);
+      final photo = await ctrl.addPhoto(e, shot.file, shot.tag, description: shot.description);
       final audio = shot.audio;
-      if (audio != null) await ctrl.addAudio(e, audio.file, audio.durationMs);
+      if (audio != null) await ctrl.addAudio(e, audio.file, audio.durationMs, photoId: photo.id);
     }
 
     Future<void> remove(Elevator e, ElevatorPhoto p) async {

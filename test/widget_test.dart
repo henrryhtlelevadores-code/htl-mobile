@@ -106,4 +106,18 @@ void main() {
     expect(e.photos.single.isPendingUpload, isTrue);
     expect(e.photos.single.tag, PhotoTag.point);
   });
+
+  test('las notas de voz conservan su origen y la marca de ya agregada', () {
+    const fromPhoto = ElevatorAudio(id: 'a1', durationMs: 900, photoId: 'p1');
+    const fromFinding = ElevatorAudio(
+        id: 'a2', durationMs: 900, transcript: 'Freno cambiado', transcriptStatus: 'DONE', appliedToFinding: true);
+    final back1 = ElevatorAudio.fromJson(fromPhoto.toJson());
+    final back2 = ElevatorAudio.fromJson(fromFinding.toJson());
+    expect(back1.isFindingNote, isFalse);
+    expect(back1.photoId, 'p1');
+    expect(back2.isFindingNote, isTrue);
+    expect(back2.appliedToFinding, isTrue);
+    // Lo que manda el servidor no trae la marca local.
+    expect(ElevatorAudio.fromJson({'id': 'a3', 'durationMs': 1}).appliedToFinding, isFalse);
+  });
 }

@@ -247,12 +247,13 @@ class WorkOrderController extends AsyncNotifier<WorkOrderDetail> {
     _commit((r, o) => r.updateFindings(o.id, e.id, t));
   }
 
-  Future<void> addPhoto(Elevator e, File file, PhotoTag tag,
+  Future<ElevatorPhoto> addPhoto(Elevator e, File file, PhotoTag tag,
       {String? description, String? taskId}) async {
     final photo = await _repo.addPhoto(_o.id, e.id, file, tag,
         description: description, taskId: taskId);
     e.photos.add(photo);
     _commit();
+    return photo;
   }
 
   void removePhoto(Elevator e, ElevatorPhoto p) {
@@ -260,9 +261,18 @@ class WorkOrderController extends AsyncNotifier<WorkOrderDetail> {
     _commit((r, o) => r.removePhoto(o.id, p));
   }
 
-  Future<void> addAudio(Elevator e, File file, int durationMs) async {
-    final audio = await _repo.addAudio(_o.id, e.id, file, durationMs);
+  /// [photoId]: foto desde la que se grabó la nota; null si es de Hallazgos.
+  Future<void> addAudio(Elevator e, File file, int durationMs, {String? photoId}) async {
+    final audio = await _repo.addAudio(_o.id, e.id, file, durationMs, photoId: photoId);
     e.audios.add(audio);
+    _commit();
+  }
+
+  /// Marca la nota como ya agregada al texto de Hallazgos (solo local).
+  void markAudioApplied(Elevator e, ElevatorAudio a) {
+    final i = e.audios.indexWhere((x) => x.id == a.id);
+    if (i < 0) return;
+    e.audios[i] = ElevatorAudio.fromJson({...a.toJson(), 'appliedToFinding': true});
     _commit();
   }
 
