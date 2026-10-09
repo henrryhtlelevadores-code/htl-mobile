@@ -74,6 +74,8 @@ class TasksScreen extends ConsumerWidget {
         if (shot == null) return;
         await ctrl.addPhoto(e, shot.file, shot.tag,
             description: shot.description ?? t.description, taskId: t.id);
+        final audio = shot.audio;
+        if (audio != null) await ctrl.addAudio(e, audio.file, audio.durationMs);
         return;
       }
       ctrl.setTask(e, t, choice, observations: obs.text.trim());
