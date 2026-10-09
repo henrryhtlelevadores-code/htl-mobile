@@ -6,7 +6,10 @@ plugins {
 
 android {
     namespace = "pe.htl.htl_tecnicos"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android exige compilar contra la API 37. Solo afecta a
+    // qué APIs se pueden usar al compilar; minSdk sigue decidiendo en qué
+    // teléfonos se instala.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
