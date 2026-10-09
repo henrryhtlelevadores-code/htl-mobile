@@ -16,4 +16,19 @@ class AppConfig {
   static const useMock = bool.fromEnvironment('USE_MOCK', defaultValue: false);
 
   static String get apiPrefix => '$apiBaseUrl/api/mobile/v1';
+
+  /// Dominio de las cuentas de los técnicos: en el login solo se escribe el
+  /// usuario (lo que va antes de la @).
+  static const emailDomain = String.fromEnvironment(
+    'EMAIL_DOMAIN',
+    defaultValue: 'htl-elevadores.com',
+  );
+
+  /// "jperez" -> "jperez@htl-elevadores.com". Si el usuario escribe un
+  /// correo completo (con @), se respeta tal cual.
+  static String emailFor(String username) {
+    final u = username.trim().toLowerCase();
+    if (u.isEmpty || u.contains('@')) return u;
+    return '$u@$emailDomain';
+  }
 }

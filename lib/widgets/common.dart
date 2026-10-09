@@ -135,6 +135,31 @@ class HtlMark extends StatelessWidget {
       );
 }
 
+/// "Creado por Fortex Business Solutions", discreto, con el logo del color
+/// que corresponde al tema (azul en claro, blanco en oscuro).
+class FortexCredit extends StatelessWidget {
+  const FortexCredit({super.key, this.logoWidth = 84});
+  final double logoWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final muted = AppColors.of(context).mutedForeground;
+    return Opacity(
+      opacity: 0.75,
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('Creado por', style: TextStyle(fontSize: 10, color: muted, letterSpacing: 0.3)),
+        const SizedBox(height: 4),
+        Image.asset(
+          dark ? 'assets/images/fortex-blanco.png' : 'assets/images/fortex-azul.png',
+          width: logoWidth,
+          semanticLabel: 'Fortex Business Solutions',
+        ),
+      ]),
+    );
+  }
+}
+
 /// Botón sol/luna para alternar el tema, como en el portal web.
 class ThemeToggleButton extends ConsumerWidget {
   const ThemeToggleButton({super.key});

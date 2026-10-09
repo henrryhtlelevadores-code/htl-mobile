@@ -23,6 +23,28 @@ flutter run --dart-define=USE_MOCK=true
 El valor por defecto de `API_BASE_URL` es el dominio de producción en Vercel.
 En el emulador de Android, `http://10.0.2.2:3000` apunta al `next dev` de tu PC.
 
+En el login solo se escribe el usuario; la app completa el correo con
+`@htl-elevadores.com` (cámbialo con `--dart-define=EMAIL_DOMAIN=...`). Si se
+escribe un correo completo, se usa tal cual.
+
+### Permisos
+
+Al entrar, la app pide de una vez cámara, micrófono y ubicación (y en iOS,
+fotos), con `permission_handler`. En Android la galería usa el selector del
+sistema, que no necesita permiso.
+
+En iOS, `permission_handler` solo pide los permisos habilitados en el
+`ios/Podfile`. Al compilar para iOS por primera vez (en una Mac), añade dentro
+de `post_install`, en el bucle de cada target:
+
+```ruby
+target.build_configurations.each do |config|
+  config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)',
+    'PERMISSION_CAMERA=1', 'PERMISSION_MICROPHONE=1',
+    'PERMISSION_LOCATION_WHENINUSE=1', 'PERMISSION_PHOTOS=1']
+end
+```
+
 ## Flujo
 
 | # | Pantalla | Qué hace | Acción del backend |

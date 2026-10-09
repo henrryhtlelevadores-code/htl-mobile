@@ -14,12 +14,12 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _email = TextEditingController();
+  final _username = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
 
   Future<void> _submit() async {
-    await ref.read(authProvider.notifier).login(_email.text, _password.text);
+    await ref.read(authProvider.notifier).login(AppConfig.emailFor(_username.text), _password.text);
     final s = ref.read(authProvider);
     if (s.hasError && mounted) showError(context, s.error!);
   }
@@ -81,11 +81,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(fontSize: 13, color: colors.mutedForeground)),
                 const SizedBox(height: 24),
                 TextField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                      labelText: 'Correo', prefixIcon: Icon(Icons.mail_outline)),
+                  controller: _username,
+                  keyboardType: TextInputType.text,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.username],
+                  decoration: InputDecoration(
+                    labelText: 'Usuario',
+                    hintText: 'jperez',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    // Solo se escribe lo que va antes de la @; el dominio se
+                    // ve siempre, no solo al enfocar el campo.
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 14),
+                      child: Text('@${AppConfig.emailDomain}',
+                          style: TextStyle(color: colors.mutedForeground, fontSize: 13)),
+                    ),
+                    suffixIconConstraints: const BoxConstraints(minHeight: 0, minWidth: 0),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -112,9 +126,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 if (AppConfig.useMock) ...[
                   const SizedBox(height: 16),
-                  const Text('Modo demostración: cualquier correo y contraseña funcionan.',
+                  const Text('Modo demostración: cualquier usuario y contraseña funcionan.',
                       textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
                 ],
+                const SizedBox(height: 40),
+                const FortexCredit(),
               ]),
             ),
           ),

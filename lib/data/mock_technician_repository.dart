@@ -27,6 +27,11 @@ class MockTechnicianRepository implements TechnicianRepository {
       '¿El cuarto de máquinas está libre de obstáculos y con iluminación?',
       '¿Se verificó el funcionamiento del stop de foso antes de ingresar?',
     ];
+    // Fechas relativas a hoy para que la tira de días tenga sentido.
+    String day(int offset) {
+      final d = DateTime.now().add(Duration(days: offset));
+      return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    }
     Elevator elevator(String code, String name) => Elevator(
           id: _uuid.v4(),
           internalCode: code,
@@ -68,7 +73,7 @@ class MockTechnicianRepository implements TechnicianRepository {
       otNumber: 'OT-2026-0100',
       status: 'PENDING',
       priority: 'NORMAL',
-      scheduledDate: '2026-10-08',
+      scheduledDate: day(0),
       scheduledTime: '09:00',
       clientName: 'Inversiones San Isidro SAC',
       description: 'Mantenimiento preventivo mensual',
@@ -88,7 +93,7 @@ class MockTechnicianRepository implements TechnicianRepository {
       otNumber: 'OT-2026-0101',
       status: 'PENDING',
       priority: 'HIGH',
-      scheduledDate: '2026-10-08',
+      scheduledDate: day(1),
       scheduledTime: '14:30',
       clientName: 'Condominio Los Rosales',
       serviceTypeCode: 'CORR',
