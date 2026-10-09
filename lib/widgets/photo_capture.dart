@@ -43,8 +43,15 @@ Future<PhotoShot?> capturePhoto(
   );
   if (source == null) return null;
 
-  final picked = await ImagePicker()
-      .pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 82);
+  // Cámara trasera por defecto: es la de las evidencias. La vista previa en
+  // vivo y el zoom al encuadrar los da la app de cámara del teléfono.
+  final picked = await ImagePicker().pickImage(
+    source: source,
+    preferredCameraDevice: CameraDevice.rear,
+    maxWidth: 1600,
+    maxHeight: 1600,
+    imageQuality: 82,
+  );
   if (picked == null || !context.mounted) return null;
 
   return showModalBottomSheet<PhotoShot>(
@@ -123,11 +130,9 @@ class _PhotoDetailSheetState extends State<PhotoDetailSheet> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                // 1. Vista previa compacta.
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(widget.file, height: 150, fit: BoxFit.cover),
-                ),
+                // 1. Vista previa compacta con la foto ENTERA (sin recorte);
+                //    al tocarla se abre a pantalla completa con zoom.
+                _PhotoPreview(file: widget.file),
                 // 2. Tipo de foto.
                 if (widget.askTag) ...[
                   const SizedBox(height: 16),
@@ -236,6 +241,129 @@ class _PhotoDetailSheetState extends State<PhotoDetailSheet> {
   }
 }
 
+/// Vista previa que muestra el encuadre completo (`contain`, sin recortar)
+/// y abre el visor con zoom al tocarla.
+class _PhotoPreview extends StatelessWidget {
+  const _PhotoPreview({required this.file});
+  final File file;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return GestureDetector(
+      onTap: () => showPhotoViewer(context, FileImage(file)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 170,
+          color: colors.muted,
+          child: Stack(fit: StackFit.expand, children: [
+            Image.file(file, fit: BoxFit.contain),
+            Positioned(
+              right: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.zoom_in, color: Colors.white, size: 16),
+                  SizedBox(width: 4),
+                  Text('Ampliar', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                ]),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// Visor a pantalla completa: la foto entera sobre fondo negro, con zoom
+/// por pellizco (hasta 6x) y doble toque para acercar o volver.
+Future<void> showPhotoViewer(BuildContext context, ImageProvider image) {
+  return Navigator.of(context, rootNavigator: true).push(
+    PageRouteBuilder<void>(
+      opaque: false,
+      barrierColor: Colors.black,
+      pageBuilder: (_, _, _) => _PhotoViewer(image: image),
+      transitionsBuilder: (_, anim, _, child) => FadeTransition(opacity: anim, child: child),
+    ),
+  );
+}
+
+class _PhotoViewer extends StatefulWidget {
+  const _PhotoViewer({required this.image});
+  final ImageProvider image;
+
+  @override
+  State<_PhotoViewer> createState() => _PhotoViewerState();
+}
+
+class _PhotoViewerState extends State<_PhotoViewer> {
+  final _controller = TransformationController();
+  TapDownDetails? _doubleTap;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggleZoom() {
+    if (_controller.value.getMaxScaleOnAxis() > 1.01) {
+      _controller.value = Matrix4.identity();
+      return;
+    }
+    final p = _doubleTap?.localPosition ?? Offset.zero;
+    const scale = 2.5;
+    _controller.value = Matrix4.identity()
+      ..translateByDouble(-p.dx * (scale - 1), -p.dy * (scale - 1), 0, 1)
+      ..scaleByDouble(scale, scale, 1, 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onDoubleTapDown: (d) => _doubleTap = d,
+            onDoubleTap: _toggleZoom,
+            child: InteractiveViewer(
+              transformationController: _controller,
+              minScale: 1,
+              maxScale: 6,
+              child: Center(child: Image(image: widget.image, fit: BoxFit.contain)),
+            ),
+          ),
+        ),
+        Positioned(
+          top: MediaQuery.viewPaddingOf(context).top + 8,
+          right: 8,
+          child: IconButton.filled(
+            style: IconButton.styleFrom(backgroundColor: Colors.black54),
+            tooltip: 'Cerrar',
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: MediaQuery.viewPaddingOf(context).bottom + 16,
+          child: const Text(
+            'Pellizca o toca dos veces para acercar',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
 class _Label extends StatelessWidget {
   const _Label(this.text, this.colors);
   final String text;
@@ -308,8 +436,14 @@ class PhotoThumb extends StatelessWidget {
     final img = photo.localPath != null
         ? Image.file(File(photo.localPath!), fit: BoxFit.cover)
         : Image.network(photo.url!, fit: BoxFit.cover);
+    final provider = photo.localPath != null
+        ? FileImage(File(photo.localPath!)) as ImageProvider
+        : NetworkImage(photo.url!);
     return Stack(fit: StackFit.expand, children: [
-      ClipRRect(borderRadius: BorderRadius.circular(8), child: img),
+      GestureDetector(
+        onTap: () => showPhotoViewer(context, provider),
+        child: ClipRRect(borderRadius: BorderRadius.circular(8), child: img),
+      ),
       Positioned(
         left: 4,
         bottom: 4,
