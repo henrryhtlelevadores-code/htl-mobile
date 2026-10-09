@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../core/theme.dart';
 import '../data/models.dart';
 
 /// Grabadora de notas de voz.
@@ -112,14 +113,14 @@ class _AudioRecorderButtonState extends State<AudioRecorderButton> {
     }
     final s = _watch.elapsed.inSeconds;
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.fiber_manual_record, color: Colors.red),
+      const Icon(Icons.fiber_manual_record, color: AppColors.red),
       const SizedBox(width: 4),
       Text('${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}'),
       const SizedBox(width: 8),
       IconButton(tooltip: 'Descartar', icon: const Icon(Icons.close), onPressed: _cancel),
       FilledButton.icon(
         style: FilledButton.styleFrom(
-            backgroundColor: Colors.red, minimumSize: const Size(0, 40)),
+            backgroundColor: AppColors.red, minimumSize: const Size(0, 40)),
         icon: const Icon(Icons.stop),
         label: const Text('Detener'),
         onPressed: _stop,

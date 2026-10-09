@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../widgets/common.dart';
 
@@ -80,7 +81,7 @@ class _SafetyScreenState extends ConsumerState<SafetyScreen> {
           if (readOnly)
             MaterialBanner(
               content: const Text('Seguridad aprobada.'),
-              leading: const Icon(Icons.verified_user, color: Colors.green),
+              leading: const Icon(Icons.verified_user, color: AppColors.emerald),
               actions: [TextButton(onPressed: () => context.pop(), child: const Text('Volver'))],
             ),
           if (!readOnly)

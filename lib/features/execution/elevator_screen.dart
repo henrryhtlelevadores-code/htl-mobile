@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../widgets/common.dart';
 
@@ -47,29 +48,55 @@ class ElevatorScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(workOrderProvider(workOrderId));
+    final colors = AppColors.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Equipo')),
       body: asyncView(value, (o) {
         final e = o.elevators.firstWhere((x) => x.id == elevatorId);
         final base = '/ot/$workOrderId/eq/$elevatorId';
         final locked = e.isCompleted;
-        return ListView(padding: const EdgeInsets.all(16), children: [
-          Text(e.displayName, style: Theme.of(context).textTheme.headlineSmall),
-          Text([e.name, e.type, e.brand].whereType<String>().join(' · ')),
-          const SizedBox(height: 16),
+        final answered = e.safety?.items.where((i) => i.response != null).length ?? 0;
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.elevator_outlined, color: AppColors.primary, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(e.displayName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 2),
+                    Text([e.name, e.type, e.brand].whereType<String>().join(' · '),
+                        style: TextStyle(fontSize: 12.5, color: colors.mutedForeground)),
+                  ]),
+                ),
+                if (locked) const StatusChip('COMPLETED'),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const SectionLabel('Pasos'),
           _Step(
             n: 1,
+            icon: Icons.health_and_safety_outlined,
             title: 'Checklist de seguridad',
-            subtitle: e.safetyDone
-                ? 'Aprobado'
-                : '${e.safety?.items.where((i) => i.response != null).length ?? 0}'
-                    '/${e.safety?.items.length ?? 0} respondidas',
+            subtitle: e.safetyDone ? 'Aprobado' : '$answered/${e.safety?.items.length ?? 0} respondidas',
             done: e.safetyDone,
             enabled: e.safety != null,
             onTap: () => context.push('$base/safety'),
           ),
           _Step(
             n: 2,
+            icon: Icons.checklist_rounded,
             title: 'Tareas de mantenimiento',
             subtitle: '${e.resolvedTasks}/${e.tasks.length} aprobadas',
             done: e.tasks.isNotEmpty && e.resolvedTasks == e.tasks.length,
@@ -78,6 +105,7 @@ class ElevatorScreen extends ConsumerWidget {
           ),
           _Step(
             n: 3,
+            icon: Icons.photo_camera_outlined,
             title: 'Fotos del equipo',
             subtitle: e.photosRequired
                 ? '${e.photos.length}/${Elevator.minPhotos} mínimo (preventivo)'
@@ -88,15 +116,19 @@ class ElevatorScreen extends ConsumerWidget {
           ),
           _Step(
             n: 4,
+            icon: Icons.sticky_note_2_outlined,
             title: 'Hallazgos',
             subtitle: 'Nota, foto o audio · ${e.audios.length} audio(s)',
             done: (e.finding?.isNotEmpty ?? false) || e.audios.isNotEmpty,
             enabled: e.safetyDone,
             onTap: () => context.push('$base/findings'),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           if (locked)
-            const Center(child: Text('Equipo finalizado.'))
+            Center(
+              child: Text('Equipo finalizado.',
+                  style: TextStyle(color: colors.mutedForeground, fontWeight: FontWeight.w600)),
+            )
           else
             FilledButton.icon(
               icon: const Icon(Icons.task_alt),
@@ -116,6 +148,7 @@ class ElevatorScreen extends ConsumerWidget {
 class _Step extends StatelessWidget {
   const _Step({
     required this.n,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.done,
@@ -123,6 +156,7 @@ class _Step extends StatelessWidget {
     required this.onTap,
   });
   final int n;
+  final IconData icon;
   final String title;
   final String subtitle;
   final bool done;
@@ -131,19 +165,48 @@ class _Step extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Card(
-      child: ListTile(
-        enabled: enabled,
-        leading: CircleAvatar(
-          backgroundColor: done ? Colors.green : cs.primaryContainer,
-          foregroundColor: done ? Colors.white : cs.onPrimaryContainer,
-          child: done ? const Icon(Icons.check) : Text('$n'),
+    final colors = AppColors.of(context);
+    final accent = done ? AppColors.emerald : (enabled ? AppColors.primary : colors.mutedForeground);
+    return Opacity(
+      opacity: enabled ? 1 : 0.6,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(children: [
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: done ? AppColors.emerald : accent.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: done
+                    ? const Icon(Icons.check, color: Colors.white, size: 20)
+                    : Text('$n', style: TextStyle(color: accent, fontWeight: FontWeight.w800)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Icon(icon, size: 16, color: accent),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                    ),
+                  ]),
+                  const SizedBox(height: 2),
+                  Text(enabled ? subtitle : (n == 1 ? 'Inicia la orden primero' : 'Bloqueado hasta aprobar la seguridad'),
+                      style: TextStyle(fontSize: 12, color: colors.mutedForeground)),
+                ]),
+              ),
+              Icon(enabled ? Icons.chevron_right : Icons.lock_outline, color: colors.mutedForeground),
+            ]),
+          ),
         ),
-        title: Text(title),
-        subtitle: Text(enabled ? subtitle : 'Bloqueado'),
-        trailing: Icon(enabled ? Icons.chevron_right : Icons.lock_outline),
-        onTap: enabled ? onTap : null,
       ),
     );
   }

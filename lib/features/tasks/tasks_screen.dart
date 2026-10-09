@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/photo_capture.dart';
@@ -151,7 +152,7 @@ class _TaskSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final parts = <Widget>[
       if (t.isCritical)
-        const Text('CRÍTICA', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        const Text('CRÍTICA', style: TextStyle(color: AppColors.redText, fontWeight: FontWeight.bold)),
       if (t.status == TaskStatus.skipped) const Text('Omitida'),
       if (t.status == TaskStatus.notApplicable) const Text('No aplica'),
       if (photoCount > 0) Text('📷 $photoCount'),

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/providers.dart';
+import 'core/theme.dart';
+import 'core/theme_mode.dart';
 import 'features/auth/login_screen.dart';
 import 'features/closing/close_work_order_screen.dart';
 import 'features/execution/elevator_screen.dart';
@@ -100,7 +102,6 @@ class HtlApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const brand = Color(0xFF1E3A8A);
     return MaterialApp.router(
       title: 'HTL Técnicos',
       debugShowCheckedModeBanner: false,
@@ -112,18 +113,9 @@ class HtlApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: brand),
-        useMaterial3: true,
-        inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-        ),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: brand, brightness: Brightness.dark),
-        useMaterial3: true,
-      ),
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
+      themeMode: ref.watch(themeModeProvider),
     );
   }
 }

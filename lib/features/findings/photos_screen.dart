@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/photo_capture.dart';
@@ -55,7 +56,7 @@ class PhotosScreen extends ConsumerWidget {
           else
             ListTile(
               leading: Icon(e.photosOk ? Icons.check_circle : Icons.info_outline,
-                  color: e.photosOk ? Colors.green : Colors.orange),
+                  color: e.photosOk ? AppColors.emerald : AppColors.amber),
               title: Text('${e.photos.length}/${Elevator.minPhotos} fotos mínimas'),
               subtitle: e.photosOk
                   ? null
