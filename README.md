@@ -10,18 +10,18 @@ web del técnico (`src/features/technician/`).
 cd mobile
 flutter pub get
 
-# Contra el backend local (next dev en tu PC, desde el emulador de Android):
+# Contra el backend desplegado en Vercel (https://htl-elevadores.vercel.app):
 flutter run
 
-# Contra el backend desplegado:
-flutter run --dart-define=API_BASE_URL=https://tu-dominio
+# Contra el backend local (next dev en tu PC, desde el emulador de Android):
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
 
 # Modo demostración (datos en memoria, no necesita backend):
 flutter run --dart-define=USE_MOCK=true
 ```
 
-En el emulador de Android, `http://10.0.2.2:3000` apunta al `next dev` de tu PC
-(es el valor por defecto de `API_BASE_URL`).
+El valor por defecto de `API_BASE_URL` es el dominio de producción en Vercel.
+En el emulador de Android, `http://10.0.2.2:3000` apunta al `next dev` de tu PC.
 
 ## Flujo
 
