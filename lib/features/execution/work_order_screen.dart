@@ -15,19 +15,15 @@ class WorkOrderScreen extends ConsumerWidget {
   final String workOrderId;
 
   Future<void> _start(BuildContext context, WidgetRef ref, WorkOrderDetail o) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: const Text('Iniciar trabajo'),
-        content: Text('Se registrará la hora de inicio de ${o.otNumber} y los equipos '
-            'pasarán a estado de mantenimiento.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Iniciar')),
-        ],
-      ),
+    final ok = await confirmDialog(
+      context,
+      title: 'Iniciar trabajo',
+      message: 'Se registrará la hora de inicio de ${o.otNumber} y los equipos '
+          'pasarán a estado de mantenimiento.',
+      confirmLabel: 'Iniciar',
+      icon: Icons.play_arrow_rounded,
     );
-    if (ok != true) return;
+    if (!ok) return;
     ref.read(workOrderProvider(workOrderId).notifier).start();
     if (context.mounted) {
       showResult(context, const ActionResult(true, 'Orden iniciada'));

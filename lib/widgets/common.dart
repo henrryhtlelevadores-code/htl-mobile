@@ -109,6 +109,108 @@ class _TopToastState extends State<_TopToast> with SingleTickerProviderStateMixi
   }
 }
 
+/// Opción de un diálogo de confirmación.
+class DialogAction<T> {
+  const DialogAction(this.label, this.value, {this.destructive = false, this.icon});
+  final String label;
+  final T value;
+  final bool destructive;
+  final IconData? icon;
+}
+
+/// Diálogo de confirmación con el mismo pie en toda la app:
+///
+/// - la primera acción es la principal: botón lleno a todo el ancho (rojo
+///   si es destructiva, p. ej. "Eliminar");
+/// - las demás acciones, con borde, a todo el ancho debajo;
+/// - "Cancelar" al final, como texto discreto.
+///
+/// Antes el tema daba ancho completo a los botones llenos y, dentro de un
+/// AlertDialog, "Cancelar" saltaba arriba a la derecha, desalineado.
+/// Devuelve el `value` elegido, o null si se cancela.
+Future<T?> showChoiceDialog<T>(
+  BuildContext context, {
+  required String title,
+  String? message,
+  required List<DialogAction<T>> actions,
+  String cancelLabel = 'Cancelar',
+}) {
+  return showDialog<T>(
+    context: context,
+    builder: (c) {
+      final colors = AppColors.of(c);
+      final error = Theme.of(c).colorScheme.error;
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              if (message != null) ...[
+                const SizedBox(height: 8),
+                Text(message, style: TextStyle(fontSize: 14, height: 1.4, color: colors.mutedForeground)),
+              ],
+              const SizedBox(height: 20),
+              for (final (i, a) in actions.indexed) ...[
+                if (i > 0) const SizedBox(height: 8),
+                if (i == 0)
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      backgroundColor: a.destructive ? error : AppColors.primary,
+                    ),
+                    onPressed: () => Navigator.pop(c, a.value),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      if (a.icon != null) ...[Icon(a.icon, size: 20), const SizedBox(width: 8)],
+                      Flexible(child: Text(a.label)),
+                    ]),
+                  )
+                else
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      foregroundColor: a.destructive ? error : null,
+                    ),
+                    onPressed: () => Navigator.pop(c, a.value),
+                    child: Text(a.label),
+                  ),
+              ],
+              const SizedBox(height: 4),
+              TextButton(
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(44),
+                  foregroundColor: colors.mutedForeground,
+                ),
+                onPressed: () => Navigator.pop(c),
+                child: Text(cancelLabel),
+              ),
+            ]),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// Confirmación de sí/no sobre [showChoiceDialog].
+Future<bool> confirmDialog(
+  BuildContext context, {
+  required String title,
+  String? message,
+  required String confirmLabel,
+  bool destructive = false,
+  IconData? icon,
+}) async =>
+    await showChoiceDialog<bool>(
+      context,
+      title: title,
+      message: message,
+      actions: [DialogAction(confirmLabel, true, destructive: destructive, icon: icon)],
+    ) ??
+    false;
+
 void showError(BuildContext context, Object e) {
   showResult(context, ActionResult(false, e.toString().replaceFirst('Exception: ', '')));
 }

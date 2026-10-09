@@ -60,22 +60,15 @@ class _FindingsScreenState extends ConsumerState<FindingsScreen> {
   }
 
   Future<void> _deleteAudio(Elevator e, ElevatorAudio a) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: const Text('Eliminar nota de voz'),
-        content: const Text('Se borrará la grabación. No se puede deshacer.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(c).colorScheme.error),
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+    final ok = await confirmDialog(
+      context,
+      title: 'Eliminar nota de voz',
+      message: 'Se borrará la grabación. No se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+      icon: Icons.delete_outline,
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     _ctrl.removeAudio(e, a);
     showResult(context, const ActionResult(true, 'Nota de voz eliminada'));
   }

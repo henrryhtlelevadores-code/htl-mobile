@@ -31,17 +31,15 @@ class PhotosScreen extends ConsumerWidget {
     }
 
     Future<void> remove(Elevator e, ElevatorPhoto p) async {
-      final ok = await showDialog<bool>(
-        context: context,
-        builder: (c) => AlertDialog(
-          title: const Text('¿Eliminar foto?'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('No')),
-            FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Eliminar')),
-          ],
-        ),
+      final ok = await confirmDialog(
+        context,
+        title: 'Eliminar foto',
+        message: 'Se borrará la foto de este equipo. No se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        destructive: true,
+        icon: Icons.delete_outline,
       );
-      if (ok != true) return;
+      if (!ok) return;
       ctrl.removePhoto(e, p);
     }
 

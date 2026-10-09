@@ -34,8 +34,12 @@ class TasksScreen extends ConsumerWidget {
         context: context,
         isScrollControlled: true,
         builder: (c) => Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(c).viewInsets.bottom + 16),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
+          padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              MediaQuery.of(c).viewInsets.bottom + MediaQuery.viewPaddingOf(c).bottom + 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Text(t.description, style: Theme.of(c).textTheme.titleMedium),
             const SizedBox(height: 12),
             TextField(
@@ -43,20 +47,33 @@ class TasksScreen extends ConsumerWidget {
               maxLines: 3,
               decoration: const InputDecoration(labelText: 'Observaciones'),
             ),
-            const SizedBox(height: 12),
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              OutlinedButton(
-                  onPressed: () => Navigator.pop(c, TaskStatus.skipped),
-                  child: const Text('Omitir')),
-              OutlinedButton(
-                  onPressed: () => Navigator.pop(c, TaskStatus.notApplicable),
-                  child: const Text('No aplica')),
-              OutlinedButton(
-                  onPressed: () => Navigator.pop(c, TaskStatus.pending),
-                  child: const Text('Pendiente')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(c, TaskStatus.completed),
-                  child: const Text('Aprobar')),
+            const SizedBox(height: 16),
+            // Acción principal a todo el ancho; las demás, en una fila pareja.
+            FilledButton.icon(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: () => Navigator.pop(c, TaskStatus.completed),
+              icon: const Icon(Icons.check, size: 20),
+              label: const Text('Aprobar'),
+            ),
+            const SizedBox(height: 8),
+            Row(children: [
+              for (final (i, (label, status)) in const [
+                ('Omitir', TaskStatus.skipped),
+                ('No aplica', TaskStatus.notApplicable),
+                ('Pendiente', TaskStatus.pending),
+              ].indexed) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(44),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                    onPressed: () => Navigator.pop(c, status),
+                    child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
             ]),
             const Divider(height: 32),
             ListTile(

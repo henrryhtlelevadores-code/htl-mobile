@@ -17,24 +17,16 @@ class ElevatorScreen extends ConsumerWidget {
 
   Future<void> _finish(BuildContext context, WidgetRef ref, Elevator e) async {
     final pendingTasks = e.tasks.length - e.resolvedTasks;
-    final allCompleted = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Finalizar ${e.displayName}'),
-        content: Text(pendingTasks == 0
-            ? 'Todas las tareas están resueltas.'
-            : 'Quedan $pendingTasks tareas pendientes. ¿Cómo deseas finalizar?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancelar')),
-          if (pendingTasks > 0)
-            TextButton(
-                onPressed: () => Navigator.pop(c, false),
-                child: const Text('Dejar como están')),
-          FilledButton(
-              onPressed: () => Navigator.pop(c, true),
-              child: Text(pendingTasks > 0 ? 'Marcar todas' : 'Finalizar')),
-        ],
-      ),
+    final allCompleted = await showChoiceDialog<bool>(
+      context,
+      title: 'Finalizar ${e.displayName}',
+      message: pendingTasks == 0
+          ? 'Todas las tareas están resueltas.'
+          : 'Quedan $pendingTasks tareas pendientes. ¿Cómo deseas finalizar?',
+      actions: [
+        DialogAction(pendingTasks > 0 ? 'Marcar todas y finalizar' : 'Finalizar', true, icon: Icons.task_alt),
+        if (pendingTasks > 0) const DialogAction('Finalizar y dejarlas como están', false),
+      ],
     );
     if (allCompleted == null) return;
     final error = ref
