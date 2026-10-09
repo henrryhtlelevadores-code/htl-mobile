@@ -16,6 +16,29 @@ class ElevatorScreen extends ConsumerWidget {
   final String elevatorId;
 
   Future<void> _finish(BuildContext context, WidgetRef ref, Elevator e) async {
+    // Hallazgos es opcional, pero al finalizar el equipo queda bloqueado:
+    // si está vacío se avisa antes, con la opción de ir a llenarlo.
+    final noFindings = (e.finding?.trim().isEmpty ?? true) &&
+        e.audios.isEmpty &&
+        !e.photos.any((p) => p.tag == PhotoTag.point && p.taskId == null);
+    if (noFindings) {
+      final choice = await showChoiceDialog<String>(
+        context,
+        title: 'Hallazgos está vacío',
+        message: 'No registraste ninguna observación, foto ni nota de voz para '
+            '${e.displayName}. Después de finalizar ya no podrás agregarlas.',
+        actions: const [
+          DialogAction('Agregar hallazgo', 'add', icon: Icons.sticky_note_2_outlined),
+          DialogAction('Finalizar sin hallazgos', 'continue'),
+        ],
+      );
+      if (!context.mounted || choice == null) return;
+      if (choice == 'add') {
+        context.push('/ot/$workOrderId/eq/$elevatorId/findings');
+        return;
+      }
+    }
+
     final pendingTasks = e.tasks.length - e.resolvedTasks;
     final allCompleted = await showChoiceDialog<bool>(
       context,
